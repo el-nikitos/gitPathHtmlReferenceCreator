@@ -16,7 +16,7 @@ public class MainClass
 							strGitPath = "./",
 							strMasterPath = "./",
 							strGitSearchMask = ".git",
-							strGitListFileName = "git-list.txt";
+							strGitListFileName = "git-list.html";
 							
 	private static int intCommand = 0;	// 0 - нет действий
 										// 1 - поиск папок .git и генерация 'git-list.txt'
@@ -48,17 +48,22 @@ public class MainClass
 				astrListOfPath = makeListOfPath( strGitPath );
 				
 				System.out.println( "saving to: " + strGitPath + strGitListFileName);
-				FileWriter fileGitList = new FileWriter( strGitPath + strGitListFileName, false );
+				FileWriter fileGitList = new FileWriter( strGitPath + strGitListFileName, false );	//создание файла для сохранения
+				
+				fileGitList.write( "<html>\n" );	// генерация и заполнение HTML
+				fileGitList.write( "<body>\n" );
 				for (int i=0; i<astrListOfPath.size(); i++)
 				{
+					fileGitList.write( "<p>" );
+					fileGitList.write( "git@git2061:" );
 					fileGitList.write( astrListOfPath.get(i) );
+					fileGitList.write( "</p>" );
 					fileGitList.append( "\n" );
 				}
+				fileGitList.write( "</body>\n" );
+				fileGitList.write( "</html>\n" );
 				fileGitList.close();
-				System.out.println( "file is saved" );
-				//strGitListFileName
-				//System.out.println( "arrayList length: " + astrListOfPath.size() );
-				//System.out.println( astrListOfPath );
+				System.out.println( "file is saved" );	// закрытие файла
 				break;
 			}
 			case 2:
@@ -82,9 +87,9 @@ public class MainClass
 			System.out.println( "use '-h' for help. Must be only key." );
 			System.out.println( "use '-git' for choose <GitPath>, '-master' for choose path when <MasterPath> branch was cloned" );
 			System.out.println( "examples for '-git' and '-master':" );
-			System.out.println( "example 1: command '-git <GitPath>' is parcing <GitPath> to fing '.git' folders and generate 'git-list.txt' in <GitPath>" );
+			System.out.println( "example 1: command '-git <GitPath>' is parcing <GitPath> to fing '.git' folders and generate 'git-list.html' in <GitPath>" );
 			System.out.println( "example 2: command '-master <MasterPath> -git <GitPath>' or '-git <GitPath> -master <MasterPath>' " );
-			System.out.println( "this command use 'git-list.txt' in <GitPath> to parcing .md-files in master-repo in <MasterPath> and generate html-guide 'repo-list.html' in <MasterPath>." );
+			System.out.println( "this command use <GitPath> to parcing .md-files in master-repo in <MasterPath> and generate html-guide 'repo-list.html' in <MasterPath>." );
 		}
 		
 		if ( ( strArgs.length == 2 ) && ( strArgs[0].equalsIgnoreCase(strKeyGit) ) ) 	// проверка, что два аргумента и первый ключ -git
@@ -93,7 +98,12 @@ public class MainClass
 			intCommand = 1;
 			
 			strGitPath = strArgs[1];
-			// проверка не то, что путь заканчивается символом '/'
+			char charLastSymbol = strGitPath.charAt( strGitPath.length()-1 );
+			//System.out.println( charLastSymbol );
+			if ( (charLastSymbol != '/') )
+			{
+				strGitPath = strGitPath + "/";	// проверка на то, что путь заканчивается символом '/'
+			}
 		}
 		
 		if ( boolAnyErrArguments == true )	// проверка на любые другие незадекларированные комбинации ключей и аргументов
@@ -145,7 +155,9 @@ public class MainClass
 	                    throws IOException 
 	            {
 	            	String strBuf = dir.toString();
-	            	if (strBuf.indexOf(strGitSearchMask)>=0)	// поиск подстроки .git в строках путей
+	            	if ( ( strBuf.indexOf(strGitSearchMask)>0 ) && 
+	            		 ( strBuf.indexOf(strGitSearchMask)==( strBuf.length()-strGitSearchMask.length() ) ) )	
+	            		// поиск подстроки .git в строках путей и подстрока .git должна быть в конце
 	            	{
 	            		arrayList.add( strBuf );
 	            		//System.out.println("postVisitDirectory: " + strBuf);
