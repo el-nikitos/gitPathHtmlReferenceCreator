@@ -10,13 +10,16 @@ import java.io.*;
 
 public class MainClass 
 {
+	private static GitRepoProperty[] gitList;
+	
 	private static String	strKeyGit = "-git",
 							strKeyMaster = "-master",
 							strKeyHelp = "-h",
 							strGitPath = "./",
 							strMasterPath = "./",
 							strGitSearchMask = ".git",
-							strGitListFileName = "git-list.html";
+							strGitListFileName = "git-list.html",
+							strMdFileMask = "/README.md";
 							
 	private static int intCommand = 0;	// 0 - нет действий
 										// 1 - поиск папок .git и генерация 'git-list.txt'
@@ -32,19 +35,19 @@ public class MainClass
 		System.out.println( strGitPath );
 		System.out.println( "<MasterPath>:" );
 		System.out.println( strMasterPath );
-		System.out.println( "Command code:" );
-		System.out.println( intCommand );
+		System.out.print( "Command code:" );
+		//System.out.println( intCommand );
 		
 		switch (intCommand)
 		{
 			default:
 			{
-				System.out.println( "no action" );
+				System.out.println( intCommand + ": No action" );
 				break;
 			}
 			case 1:
 			{
-				System.out.println( "parcing git-repository path..." );
+				System.out.println( intCommand + ": Parcing git-repository path..." );
 				astrListOfPath = makeListOfPath( strGitPath );
 				
 				System.out.println( "saving to: " + strGitPath + strGitListFileName);
@@ -52,6 +55,7 @@ public class MainClass
 				
 				fileGitList.write( "<html>\n" );	// генерация и заполнение HTML
 				fileGitList.write( "<body>\n" );
+				fileGitList.write( "<p><a href='http://git2061'>Return to parent directory</a></p>" );
 				for (int i=0; i<astrListOfPath.size(); i++)
 				{
 					fileGitList.write( "<p>" );
@@ -68,12 +72,50 @@ public class MainClass
 			}
 			case 2:
 			{
-				System.out.println( "case 2" );
+				System.out.println( intCommand + ": Parcing git-repository path..." );
+				astrListOfPath = makeListOfPath( strGitPath );
+				
+				//gitList = new GitRepoProperty[ astrListOfPath.size() ];
+				gitList = makeListOfGitProperty( astrListOfPath, strMasterPath );
+				
+				
+				System.out.println( "saving to: " + strGitPath + strGitListFileName);
+				FileWriter fileGitList = new FileWriter( strGitPath + strGitListFileName, false );	//создание файла для сохранения
+				
+				for (int i=0; i<astrListOfPath.size(); i++)
+				{
+					fileGitList.write( gitList[i].strPathToRepo + ";" );
+					fileGitList.write( gitList[i].strRepoName + ";" );
+					fileGitList.write( gitList[i].strPathToMdFile + ";" );
+					fileGitList.append( "\n" );
+				}
+				
+				fileGitList.close();
+				
+				System.out.println( "file is saved" );	// закрытие файла
 				break;
+				// поля: индексы агрегатов; 
 			}
 		}
 		
     }
+	
+	private static GitRepoProperty[] makeListOfGitProperty( ArrayList<String> astrList, String strPathToGitMaster )
+	{
+		int intArrSize = astrList.size();
+		GitRepoProperty[] gitBufList = new GitRepoProperty[ intArrSize ];
+		
+		for (int i=0; i<intArrSize; i++)
+		{
+			gitBufList[i] = new GitRepoProperty( astrList.get(i) );
+			//System.out.println( "array size: " + gitBufList.length );
+			String bufString = astrList.get(i).substring( strGitPath.length() );
+			gitBufList[i].strRepoName = bufString.substring(0, bufString.length() - strGitSearchMask.length() );
+			gitBufList[i].strPathToMdFile = strPathToGitMaster + gitBufList[i].strRepoName + strMdFileMask;
+		}
+		
+		return gitBufList;
+	}
 	
 	private static void checkArguments(String[] strArgs)
 	{
@@ -104,6 +146,28 @@ public class MainClass
 			{
 				strGitPath = strGitPath + "/";	// проверка на то, что путь заканчивается символом '/'
 			}
+		}
+		
+		if ( ( strArgs.length == 4 ) && ( strArgs[0].equalsIgnoreCase(strKeyGit) ) && ( strArgs[2].equalsIgnoreCase(strKeyMaster) ) )
+			// проверка, что четыре аргумента, первый ключ -git, а третий -master
+		{
+			boolAnyErrArguments = false;
+			intCommand = 2;
+			
+			strGitPath = strArgs[1];
+			char charLastSymbol = strGitPath.charAt( strGitPath.length()-1 );
+			if ( (charLastSymbol != '/') )
+			{
+				strGitPath = strGitPath + "/";	// проверка на то, что путь заканчивается символом '/'
+			}
+			
+			strMasterPath = strArgs[3];
+			charLastSymbol = strMasterPath.charAt( strMasterPath.length()-1 );
+			if ( (charLastSymbol != '/') )
+			{
+				strMasterPath = strMasterPath + "/";	// проверка на то, что путь заканчивается символом '/'
+			}
+			
 		}
 		
 		if ( boolAnyErrArguments == true )	// проверка на любые другие незадекларированные комбинации ключей и аргументов

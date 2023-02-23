@@ -12,6 +12,6 @@
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="helloapp.MainClass"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="helloapp"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-git D:\getahead-repo\gitPathHtmlReferenceCreator\test"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-git D:\getahead-repo\gitPathHtmlReferenceCreator\helloapp\test -master D:\getahead-repo\gitPathHtmlReferenceCreator\master-test"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="helloapp"/>
 </launchConfiguration>
