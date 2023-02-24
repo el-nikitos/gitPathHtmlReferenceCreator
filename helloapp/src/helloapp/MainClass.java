@@ -2,6 +2,7 @@ package helloapp;
 
 //import java.util.Scanner;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 //import java.util.HashSet;
@@ -55,7 +56,7 @@ public class MainClass
 				
 				fileGitList.write( "<html>\n" );	// генерация и заполнение HTML
 				fileGitList.write( "<body>\n" );
-				fileGitList.write( "<p><a href='http://git2061'>Return to parent directory</a></p>" );
+				fileGitList.write( "<p><a href='http://git2061'>Return to parent directory</a></p>\n" );
 				for (int i=0; i<astrListOfPath.size(); i++)
 				{
 					fileGitList.write( "<p>" );
@@ -67,7 +68,7 @@ public class MainClass
 				fileGitList.write( "</body>\n" );
 				fileGitList.write( "</html>\n" );
 				fileGitList.close();
-				System.out.println( "file is saved" );	// закрытие файла
+				System.out.println( "file is saved" );	// закрытие файла после окончания записи
 				break;
 			}
 			case 2:
@@ -78,27 +79,99 @@ public class MainClass
 				//gitList = new GitRepoProperty[ astrListOfPath.size() ];
 				gitList = makeListOfGitProperty( astrListOfPath, strMasterPath );
 				
+				for (int i=0; i<astrListOfPath.size(); i++)
+				{
+					try 
+					{
+						BufferedReader fileMD = new BufferedReader( new FileReader( gitList[i].strPathToMdFile ) );
+						//FileReader fileMD = new FileReader( gitList[i].strPathToMdFile );
+						//System.out.println( "file: " + gitList[i].strPathToMdFile + " is found" );
+						String bufString = fileMD.readLine();
+						while ( bufString != null )
+						{
+							gitList[i] = checkStringFromMdFile( gitList[i], bufString );	// тут не очень оптимальное место, потом мб переработать
+							//System.out.println( bufString );
+							bufString = fileMD.readLine();
+						}
+						fileMD.close();
+					}	
+					catch (FileNotFoundException e)
+					{
+						System.out.println( "file: " + gitList[i].strPathToMdFile + " not found" );
+					}
+					
+				}
+				
 				
 				System.out.println( "saving to: " + strGitPath + strGitListFileName);
 				FileWriter fileGitList = new FileWriter( strGitPath + strGitListFileName, false );	//создание файла для сохранения
 				
+				fileGitList.write( "<html>\n" );	// генерация и заполнение HTML
+				fileGitList.write( "<body>\n" );
+				fileGitList.write( "<p><a href='http://git2061'>Return to parent directory</a></p>\n" );
+				
+				fileGitList.write( "<table border=\"1\">\n" );
+				fileGitList.write( "<tr>\n"
+									  + "	<td>Path to repo</td>\n"
+									  + "	<td>Repo name</td>\n "
+									  + "	<td>Project name</td>\n "
+									  + "	<td>List of machines</td>\n "
+									  + "	<td>Repo type</td> </tr>\n" );
+				
 				for (int i=0; i<astrListOfPath.size(); i++)
 				{
-					fileGitList.write( gitList[i].strPathToRepo + ";" );
-					fileGitList.write( gitList[i].strRepoName + ";" );
-					fileGitList.write( gitList[i].strPathToMdFile + ";" );
+					fileGitList.write( "<tr>\n" );
+					fileGitList.write( "	<td>git@git2061:" + gitList[i].strPathToRepo + "</td>\n" );
+					
+					fileGitList.write( "	<td>" + gitList[i].strRepoName + "</td>\n" );
+					
+					fileGitList.write( "	<td>" + gitList[i].strProjectName + "</td>\n" );
+					fileGitList.write( "	<td>" + gitList[i].strListOfMachine + "</td>\n" );
+					fileGitList.write( "	<td>" + gitList[i].strRepoType + "</td>\n" );
+					fileGitList.write( "</tr>\n" );
+					//fileGitList.write( gitList[i].strPathToMdFile + ";" );
+					/*
+					fileGitList.write( gitList[i].strListOfMachine + ";" );
+					fileGitList.write( gitList[i].strRepoType + ";" );
 					fileGitList.append( "\n" );
+					*/
 				}
+				fileGitList.write( "</table>\n" );
 				
+				fileGitList.write( "</body>\n" );
+				fileGitList.write( "</html>\n" );
 				fileGitList.close();
-				
-				System.out.println( "file is saved" );	// закрытие файла
+				System.out.println( "file is saved" );	// закрытие файла после окончания записи
 				break;
 				// поля: индексы агрегатов; 
 			}
 		}
 		
     }
+	
+	private static GitRepoProperty checkStringFromMdFile( GitRepoProperty inputRepoProperty, String strFromMdFile )
+	{
+		String 	strProjectNameMsk = "ProjectName:",
+				strListOfMachineMask = "ListOfMachine:",
+				strRepoTypeMask = "RepoType:";
+		
+		if ( strFromMdFile.indexOf( strProjectNameMsk ) >= 0 )												// в строке содержится имя проекта?
+		{
+			inputRepoProperty.strProjectName = strFromMdFile.substring( strProjectNameMsk.length() );
+		}
+		
+		if ( strFromMdFile.indexOf( strListOfMachineMask ) >= 0 )											// в строке содержатся индексы агрегатов?
+		{
+			inputRepoProperty.strListOfMachine = strFromMdFile.substring( strListOfMachineMask.length() );
+		}
+		
+		if ( strFromMdFile.indexOf( strRepoTypeMask ) >= 0 )												// в строке содержится тип репозитория?
+		{
+			inputRepoProperty.strRepoType = strFromMdFile.substring( strRepoTypeMask.length() );
+		}
+		
+		return inputRepoProperty;
+	}
 	
 	private static GitRepoProperty[] makeListOfGitProperty( ArrayList<String> astrList, String strPathToGitMaster )
 	{
@@ -176,11 +249,7 @@ public class MainClass
 			
 			System.out.println( "ERROR: incorrect keys or arguments, use '-h' for HELP" );
 		}
-		/*
-		System.out.println( strKeyGit );
-		System.out.println( strKeyMaster );
-		System.out.println( strKeyHelp );
-		*/
+
 	}
 	
 	private static ArrayList<String> makeListOfPath(String pathString) throws IOException
